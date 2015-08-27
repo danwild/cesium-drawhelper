@@ -1,14 +1,18 @@
 {
-  "name": "cesium-drawhelper",
-  "version": "0.0.0",
-  "homepage": "https://github.com/leforthomas/cesium-drawhelper",
+  "name": "cesium-drawtools",
+  "version": "0.0.1",
+  "homepage": "https://github.com/danwild/cesium-drawtools",
   "authors": [
-  "Thomas Lefort"
+    "Daniel Wild",
+    "Thomas Lefort"
   ],
-  "description": "A very early stage shape editor for Cesium. Currently limited to 2D and simple shapes.",
-  "main": ["DrawHelper.js", "DrawHelper.css"],
+  "description": "A collection of helper functions for drawing/editing shapes for CesiumJS, based on DrawHelper",
+  "main": [
+    "DrawHelper.js",
+    "DrawHelper.css"
+  ],
   "keywords": [
-    "cesiumjs"
+    "CesiumJS"
   ],
   "license": "Apache 2.0",
   "ignore": [
