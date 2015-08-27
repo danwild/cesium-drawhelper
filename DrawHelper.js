@@ -16,7 +16,7 @@ var DrawHelper = (function() {
     // constructor
     function _(cesiumWidget) {
         this._scene = cesiumWidget.scene;
-        this._tooltip = createTooltip(cesiumWidget.container);
+        this._tooltip = createTooltip(cesiumWidget.container, 350, 0); // offsetX, offsetY
         this._surfaces = [];
 
         this.initialiseHandlers();
@@ -620,19 +620,19 @@ var DrawHelper = (function() {
     })();
 
     var defaultBillboard = {
-        iconUrl: "./img/dragIcon.png",
+        iconUrl: "http://localhost:8080/bower_components/cesium-drawtools/img/dragIcon.png",
         shiftX: 0,
         shiftY: 0
     }
 
     var dragBillboard = {
-        iconUrl: "./img/dragIcon.png",
+        iconUrl: "http://localhost:8080/bower_components/cesium-drawtools/img/dragIcon.png",
         shiftX: 0,
         shiftY: 0
     }
 
     var dragHalfBillboard = {
-        iconUrl: "./img/dragIconLight.png",
+        iconUrl: "http://localhost:8080/bower_components/cesium-drawtools/img/dragIconLight.png",
         shiftX: 0,
         shiftY: 0
     }
@@ -1644,12 +1644,12 @@ var DrawHelper = (function() {
             }
 
             var drawOptions = {
-                markerIcon: "./img/glyphicons_242_google_maps.png",
-                polylineIcon: "./img/glyphicons_097_vector_path_line.png",
-                polygonIcon: "./img/glyphicons_096_vector_path_polygon.png",
-                circleIcon: "./img/glyphicons_095_vector_path_circle.png",
-                extentIcon: "./img/glyphicons_094_vector_path_square.png",
-                clearIcon: "./img/glyphicons_067_cleaning.png",
+                markerIcon: "fa-map-marker",
+                polylineIcon: "fa-minus",
+                polygonIcon: "fa-bookmark-o",
+                circleIcon: "fa-circle-thin",
+                extentIcon: "fa-square-o",
+                clearIcon: "fa-trash-o",
                 polylineDrawingOptions: defaultPolylineOptions,
                 polygonDrawingOptions: defaultPolygonOptions,
                 extentDrawingOptions: defaultExtentOptions,
@@ -1664,23 +1664,24 @@ var DrawHelper = (function() {
             toolbar.className = "toolbar";
             options.container.appendChild(toolbar);
 
-            function addIcon(id, url, title, callback) {
-                var div = document.createElement('DIV');
-                div.className = 'button';
-                div.title = title;
-                toolbar.appendChild(div);
-                div.onclick = callback;
-                var span = document.createElement('SPAN');
-                div.appendChild(span);
-                var image = document.createElement('IMG');
-                image.src = url;
-                span.appendChild(image);
-                return div;
+            function addIcon(faClassName, title, callback) {
+
+               var div = document.createElement('div');
+               div.className = 'btn btn-default block';
+               div.title = title;
+               toolbar.appendChild(div);
+               div.onclick = callback;
+
+               var icon = document.createElement('span');
+	           icon.className = 'fa '+ faClassName;
+               div.appendChild(icon);
+
+	           return div;
             }
 
             var scene = drawHelper._scene;
 
-            addIcon('marker', options.markerIcon, 'Click to start drawing a 2D marker', function() {
+            addIcon(options.markerIcon, 'Click to start drawing a 2D marker', function() {
                 drawHelper.startDrawingMarker({
                     callback: function(position) {
                         _self.executeListeners({name: 'markerCreated', position: position});
@@ -1688,7 +1689,7 @@ var DrawHelper = (function() {
                 });
             })
 
-            addIcon('polyline', options.polylineIcon, 'Click to start drawing a 2D polyline', function() {
+            addIcon(options.polylineIcon, 'Click to start drawing a 2D polyline', function() {
                 drawHelper.startDrawingPolyline({
                     callback: function(positions) {
                         _self.executeListeners({name: 'polylineCreated', positions: positions});
@@ -1696,7 +1697,7 @@ var DrawHelper = (function() {
                 });
             })
 
-            addIcon('polygon', options.polygonIcon, 'Click to start drawing a 2D polygon', function() {
+            addIcon(options.polygonIcon, 'Click to start drawing a 2D polygon', function() {
                 drawHelper.startDrawingPolygon({
                     callback: function(positions) {
                         _self.executeListeners({name: 'polygonCreated', positions: positions});
@@ -1704,7 +1705,7 @@ var DrawHelper = (function() {
                 });
             })
 
-            addIcon('extent', options.extentIcon, 'Click to start drawing an Extent', function() {
+            addIcon(options.extentIcon, 'Click to start drawing an Extent', function() {
                 drawHelper.startDrawingExtent({
                     callback: function(extent) {
                         _self.executeListeners({name: 'extentCreated', extent: extent});
@@ -1712,7 +1713,7 @@ var DrawHelper = (function() {
                 });
             })
 
-            addIcon('circle', options.circleIcon, 'Click to start drawing a Circle', function() {
+            addIcon(options.circleIcon, 'Click to start drawing a Circle', function() {
                 drawHelper.startDrawingCircle({
                     callback: function(center, radius) {
                         _self.executeListeners({name: 'circleCreated', center: center, radius: radius});
@@ -1725,7 +1726,7 @@ var DrawHelper = (function() {
             var div = document.createElement('DIV');
             div.className = 'divider';
             toolbar.appendChild(div);
-            addIcon('clear', options.clearIcon, 'Remove all primitives', function() {
+            addIcon(options.clearIcon, 'Remove all primitives', function() {
                 scene.primitives.removeAll();
             });
 
@@ -1765,7 +1766,7 @@ var DrawHelper = (function() {
         return e;
     };
 
-    function createTooltip(frameDiv) {
+    function createTooltip(frameDiv, offsetX, offsetY) {
 
         var tooltip = function(frameDiv) {
 
@@ -1795,8 +1796,8 @@ var DrawHelper = (function() {
             if(position && message) {
                 this.setVisible(true);
                 this._title.innerHTML = message;
-                this._div.style.left = position.x + 10 + "px";
-                this._div.style.top = (position.y - this._div.clientHeight / 2) + "px";
+                this._div.style.left = position.x + 10 + offsetX + "px";
+                this._div.style.top = (position.y - this._div.clientHeight / 2) + offsetY + "px";
             }
         }
 
