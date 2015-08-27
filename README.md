@@ -1,7 +1,13 @@
-cesium-drawhelper
+cesium-drawtools
 ================
 
+<strong>Stripped back version of DrawHelper.<br/>
+
+Basically removing the toolbar UI etc. but keeping the collection of helper functions.</strong><br/>
+
 DrawHelper: A very early stage shape editor for Cesium. Currently limited to 2D and simple shapes.
+
+
 
 Cesium version: Tested against Cesium v1.0.
 
