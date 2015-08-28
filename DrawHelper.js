@@ -17,11 +17,9 @@ var DrawHelper = (function() {
     function _(cesiumWidget) {
         this._scene = cesiumWidget.scene;
         this._tooltip = createTooltip(cesiumWidget.container, 350, 0); // offsetX, offsetY
-        //this._surfaces = [];
 
         this.initialiseHandlers();
-
-        this.enhancePrimitives();
+		this.enhancePrimitives();
     }
 
     _.prototype.initialiseHandlers = function() {
@@ -636,11 +634,6 @@ var DrawHelper = (function() {
         shiftY: 0
     }
 
-    _.prototype.createBillboardGroup = function(points, options, callbacks) {
-        var markers = new _.BillboardGroup(this, options);
-        markers.addBillboards(points, callbacks);
-        return markers;
-    }
 
     _.BillboardGroup = function(drawHelper, options) {
 
@@ -1656,91 +1649,11 @@ var DrawHelper = (function() {
             };
 
             fillOptions(options, drawOptions);
-
-            var _self = this;
-
-            var toolbar = document.createElement('DIV');
-            toolbar.className = "toolbar";
-            options.container.appendChild(toolbar);
-
-            function addIcon(faClassName, title, callback) {
-
-               var div = document.createElement('div');
-               div.className = 'btn btn-default block';
-               div.title = title;
-               toolbar.appendChild(div);
-               div.onclick = callback;
-
-               var icon = document.createElement('span');
-	           icon.className = 'fa '+ faClassName;
-               div.appendChild(icon);
-
-	           return div;
-            }
-
-            var scene = drawHelper._scene;
-
-            addIcon(options.markerIcon, 'Click to start drawing a 2D marker', function() {
-                drawHelper.startDrawingMarker({
-                    callback: function(position) {
-                        _self.executeListeners({name: 'markerCreated', position: position});
-                    }
-                });
-            })
-
-            addIcon(options.polylineIcon, 'Click to start drawing a 2D polyline', function() {
-                drawHelper.startDrawingPolyline({
-                    callback: function(positions) {
-                        _self.executeListeners({name: 'polylineCreated', positions: positions});
-                    }
-                });
-            })
-
-            addIcon(options.polygonIcon, 'Click to start drawing a 2D polygon', function() {
-                drawHelper.startDrawingPolygon({
-                    callback: function(positions) {
-                        _self.executeListeners({name: 'polygonCreated', positions: positions});
-                    }
-                });
-            })
-
-            addIcon(options.extentIcon, 'Click to start drawing an Extent', function() {
-                drawHelper.startDrawingExtent({
-                    callback: function(extent) {
-                        _self.executeListeners({name: 'extentCreated', extent: extent});
-                    }
-                });
-            })
-
-            addIcon(options.circleIcon, 'Click to start drawing a Circle', function() {
-                drawHelper.startDrawingCircle({
-                    callback: function(center, radius) {
-                        _self.executeListeners({name: 'circleCreated', center: center, radius: radius});
-                    }
-                });
-            })
-
-            // add a clear button at the end
-            // add a divider first
-            var div = document.createElement('DIV');
-            div.className = 'divider';
-            toolbar.appendChild(div);
-            addIcon(options.clearIcon, 'Remove all primitives', function() {
-                scene.primitives.removeAll();
-            });
-
-            enhanceWithListeners(this);
-
         }
 
         return _;
 
     })();
-
-    _.prototype.addToolbar = function(container, options) {
-        options = copyOptions(options, {container: container});
-        return new _.DrawHelperWidget(this, options);
-    }
 
     function getExtent(mn, mx) {
         var e = new Cesium.Rectangle();

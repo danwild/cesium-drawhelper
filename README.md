@@ -14,6 +14,7 @@ All draw functions accept a callback function in the options object which will b
 
 <h2>TODO</h2>
 <ul>
+	<li>remove function throwing error on circles</li>
 	<li>Continue to remove unused plugin components</li>
 	<li>Drawing materials don't seem to "drape" over 3d terrain</li>
 </ul>
