@@ -619,19 +619,19 @@ var DrawHelper = (function() {
     })();
 
     var defaultBillboard = {
-        iconUrl: "bower_components/cesium-drawtools/img/dragIcon.png",
+        iconUrl: "bower_components/cesium-ng-drawhelper/img/dragIcon.png",
         shiftX: 0,
         shiftY: 0
     }
 
     var dragBillboard = {
-        iconUrl: "bower_components/cesium-drawtools/img/dragIcon.png",
+        iconUrl: "bower_components/cesium-ng-drawhelper/img/dragIcon.png",
         shiftX: 0,
         shiftY: 0
     }
 
     var dragHalfBillboard = {
-        iconUrl: "bower_components/cesium-drawtools/img/dragIconLight.png",
+        iconUrl: "bower_components/cesium-ng-drawhelper/img/dragIcon.png",
         shiftX: 0,
         shiftY: 0
     }
