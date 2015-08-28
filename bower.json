@@ -1,18 +1,19 @@
 {
-  "name": "cesium-drawtools",
+  "name": "cesium-ng-drawhelper",
   "version": "0.0.1",
-  "homepage": "https://github.com/danwild/cesium-drawtools",
+  "homepage": "https://github.com/danwild/cesium-ng-drawhelper",
   "authors": [
     "Daniel Wild",
     "Thomas Lefort"
   ],
-  "description": "A collection of helper functions for drawing/editing shapes for CesiumJS, based on DrawHelper",
+  "description": "An AngularJS service containing a collection of helper functions for drawing/editing shapes with CesiumJS, using DrawHelper",
   "main": [
     "DrawHelper.js",
     "DrawHelper.css"
   ],
   "keywords": [
-    "CesiumJS"
+    "CesiumJS",
+    "AngularJS"
   ],
   "license": "Apache 2.0",
   "ignore": [

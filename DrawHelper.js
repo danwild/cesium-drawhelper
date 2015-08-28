@@ -17,12 +17,11 @@ var DrawHelper = (function() {
     function _(cesiumWidget) {
         this._scene = cesiumWidget.scene;
         this._tooltip = createTooltip(cesiumWidget.container, 350, 0); // offsetX, offsetY
-        this._surfaces = [];
+        //this._surfaces = [];
 
         this.initialiseHandlers();
 
         this.enhancePrimitives();
-
     }
 
     _.prototype.initialiseHandlers = function() {
@@ -149,7 +148,7 @@ var DrawHelper = (function() {
     }
 
     var material = Cesium.Material.fromType(Cesium.Material.ColorType);
-    material.uniforms.color = new Cesium.Color(1.0, 1.0, 0.0, 0.5);
+    material.uniforms.color = new Cesium.Color(0, 0, 153, 0.3);
 
     var defaultShapeOptions = {
         ellipsoid: Cesium.Ellipsoid.WGS84,
@@ -620,19 +619,19 @@ var DrawHelper = (function() {
     })();
 
     var defaultBillboard = {
-        iconUrl: "http://localhost:8080/bower_components/cesium-drawtools/img/dragIcon.png",
+        iconUrl: "bower_components/cesium-drawtools/img/dragIcon.png",
         shiftX: 0,
         shiftY: 0
     }
 
     var dragBillboard = {
-        iconUrl: "http://localhost:8080/bower_components/cesium-drawtools/img/dragIcon.png",
+        iconUrl: "bower_components/cesium-drawtools/img/dragIcon.png",
         shiftX: 0,
         shiftY: 0
     }
 
     var dragHalfBillboard = {
-        iconUrl: "http://localhost:8080/bower_components/cesium-drawtools/img/dragIconLight.png",
+        iconUrl: "bower_components/cesium-drawtools/img/dragIconLight.png",
         shiftX: 0,
         shiftY: 0
     }

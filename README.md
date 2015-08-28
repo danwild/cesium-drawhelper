@@ -1,33 +1,24 @@
-cesium-drawtools
+cesium-ng-drawhelper
 ================
 
-<strong>Stripped back version of DrawHelper.<br/>
+<p>An AngularJS service wrapper for DrawHelper (https://github.com/leforthomas/cesium-drawhelper).</p>
 
-Basically removing the toolbar UI etc. but keeping the collection of helper functions.</strong><br/>
+<h2>Use:</h2>
 
-DrawHelper: A very early stage shape editor for Cesium. Currently limited to 2D and simple shapes.
+Download repo or `$ bower install cesium-ng-drawhelper`
 
+Add the `cesium.drawhelper` module to your angular app, then use the `drawHelperService` to access draw functions.<br/>
+(before use, you must call `drawHelperService.init(myCesiumObject)` with your cesium Viewer or Widget). 
 
+All draw functions accept a callback function in the options object which will be called with the created primitive.
 
-Cesium version: Tested against Cesium v1.0.
+<h2>TODO</h2>
+<ul>
+	<li>Drawing materials don't seem to "drape" over 3d terrain</li>
+</ul>
 
-License: Apache 2.0. Free for commercial and non-commercial use. See LICENSE.md.
+<h2>Notes</h2>
+<ul>
+	<li>The DrawHelper.js/DrawHelper.css in this fork will be stripped back to remove the UI components etc.</li>
+</ul>
 
-Usage:
-
-Import the DrawHelper.js, DrawHelper.css and /img/ image files into your directory. Add script and css files to your page.
-
-Instantiate a drawHelper passing it the CesiumWidget.
-
-You can:
-- use the self contained drawing widget by calling the drawHelper.addToolbar(container, options). This will add a drawing toolbar to the specified container. Options are for personalising the display of the shapes. The toolbar issues one creation event per shape created. You can listen to those events by calling the addListener method.
-- use the startDrawXXX methods of DrawHelper to create shapes interactively
-- enable editing of your primitives (at the moment Billboard, Polygon, ExtentPrimitive, DrawHelper.CirclePrimitive, DrawHelper.EllipsePrimitive and DrawHelper.PolylinePrimitive) by calling their setEditable method.
-
-The toolbar can be customised at creation by passing an option object.
-
-Check the index.html example to get started.
-
-Check the website http://pad.geocento.com/DrawHelper/ for a live version.
-
-Future versions will include shape dragging, scaling and rotation and support for hierarchical polygon editing.
