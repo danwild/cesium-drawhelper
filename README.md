@@ -14,14 +14,16 @@ All draw functions accept a callback function in the options object which will b
 
 Now uses <a href="https://cesiumjs.org/Cesium/Build/Documentation/GroundPrimitive.html">GroundPrimitives</a> from the <a href="http://cesiumjs.org/2015/09/01/Cesium-version-1.13-released/">1.13 release</a> to 'drape' geometries over 3d terrain.
 
-<strong>However:</strong> GroundPrimitives don't yet support Polylines or Billboards (which we use for markers for drawing),
- which still needs some work.
-
-<h2>TODO</h2>
+<h2>Bugs/Todo:</h2>
 <ul>
+	<li>For GroundPrimitives; the <code>pickPrimitive</code> property of the <code>GeometryInstance</code> isn't handled the same way (as a Primitive) when picking. As such, the <code>id</code> member has been used to hold a reference to the decorated object.</li>
+	<li>GroundPrimitives don't yet support Polylines or Billboards (which we use for markers for drawing), which still needs some work.</li>
+	<li>The <code>removeAllPrimitives()</code> function needs a refactor - Billboards aren't deleted if you try to remove a shape while in edit mode.</li>
 	<li>Trigger callback function on edit</li>
-	<li>remove function throwing error on circles</li>
-	<li>Continue to remove unused plugin components</li>
+    	<li>Need to inspect function throwing error on circles</li>
+    	<li>Continue to remove unused plugin components</li>
+</ul>
+	
 </ul>
 
 <h2>Notes</h2>
