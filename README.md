@@ -20,8 +20,8 @@ Now uses <a href="https://cesiumjs.org/Cesium/Build/Documentation/GroundPrimitiv
 	<li>GroundPrimitives don't yet support Polylines or Billboards (which we use for markers for drawing), which still needs some work.</li>
 	<li>The <code>removeAllPrimitives()</code> function needs a refactor - Billboards aren't deleted if you try to remove a shape while in edit mode.</li>
 	<li>Trigger callback function on edit</li>
-    	<li>Need to inspect function throwing error on circles</li>
-    	<li>Continue to remove unused plugin components</li>
+    <li>Need to inspect function throwing error on circles</li>
+    <li>Continue to remove unused plugin components</li>
 </ul>
 	
 </ul>

@@ -101,46 +101,47 @@ angular.module('cesium.drawhelper', [])
 
 	/**
 	 *
-	 * Wrapper for DrawHelper.startDrawingPolyline
+	 * Wrapper for DrawHelper.startDrawingCorridor
 	 *
-     * @param options {
-	 *      callback: Function, // returns the created primitive
+	 * @param options {
+	 *      callback: Function,
 	 *      editable: Boolean,
 	 *      width: Number,
 	 *      geodesic: Boolean
 	 * }
 	 *
 	 */
-	service.drawPolyline = function(options){
+	service.drawCorridor = function(options){
 
 		service.active = true;
 
-		service.drawHelper.startDrawingPolyline({
+		service.drawHelper.startDrawingCorridor({
 
 			callback: function(positions) {
 
-				service.loggingMessage('Polyline created with ' + positions.length + ' points');
-				var polyline = new DrawHelper.PolylinePrimitive({
+				service.loggingMessage('Corridor created with ' + positions.length + ' points');
+				var corridor = new DrawHelper.CorridorPrimitive({
 					positions: positions,
 					width: options.width || 5,
 					geodesic: options.hasOwnProperty("geodesic") ? options.geodesic : true
 				});
-				primitivesCollection.add(polyline);
+
+				primitivesCollection.add(corridor);
 
 				if(options.hasOwnProperty("editable") && options.editable){
 
-					polyline.setEditable();
-					polyline.addListener('onEdited', function(event) {
-						service.loggingMessage('Polyline edited, ' + event.positions.length + ' points');
+					corridor.setEditable();
+					corridor.addListener('onEdited', function(event) {
+						service.loggingMessage('Corridor edited, ' + event.positions.length + ' points');
 					});
 				}
-
-				options.hasOwnProperty('callback') ? options.callback(polyline) : console.log(polyline);
+				options.hasOwnProperty('callback') ? options.callback(corridor) : console.log(corridor);
 			}
 		});
 	};
 
-	/**
+
+		/**
 	 *
 	 * Wrapper for DrawHelper.startDrawingPolygon
 	 *

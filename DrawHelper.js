@@ -234,21 +234,13 @@ var DrawHelper = (function() {
 	var defaultExtentOptions = copyOptions(defaultShapeOptions, {});
 	var defaultCircleOptions = copyOptions(defaultShapeOptions, {});
 	var defaultEllipseOptions = copyOptions(defaultSurfaceOptions, {rotation: 0});
-
-	var defaultPolylineOptions = copyOptions(defaultShapeOptions, {
-		width: 5,
+	var defaultCorridorOptions = copyOptions(defaultShapeOptions, {
 		geodesic: true,
-		granularity: 10000,
-		appearance: new Cesium.PolylineMaterialAppearance({
+		appearance: new Cesium.EllipsoidSurfaceAppearance({
 			aboveGround : false
-		}),
-		material : material
+		})
 	});
 
-//    Cesium.Polygon.prototype.setStrokeStyle = setStrokeStyle;
-//    
-//    Cesium.Polygon.prototype.drawOutline = drawOutline;
-//
 
 	var ChangeablePrimitive = (function() {
 
@@ -292,7 +284,8 @@ var DrawHelper = (function() {
 			}
 
 			if (!Cesium.defined(this.appearance)) {
-				throw new Cesium.DeveloperError('this.material must be defined.');
+				console.log("this.material must be defined.");
+				//throw new Cesium.DeveloperError('this.material must be defined.');
 			}
 
 			if (this.granularity < 0.0) {
@@ -629,11 +622,11 @@ var DrawHelper = (function() {
 		return _;
 	})();
 
-	_.PolylinePrimitive = (function() {
+	_.CorridorPrimitive = (function() {
 
 		function _(options) {
 
-			options = copyOptions(options, defaultPolylineOptions);
+			options = copyOptions(options, defaultCorridorOptions);
 
 			this.initialiseOptions(options);
 
@@ -671,10 +664,12 @@ var DrawHelper = (function() {
 				return;
 			}
 
-			return new Cesium.PolylineGeometry({
+			return new Cesium.CorridorGeometry({
 				positions: this.positions,
-				height : this.height,
-				width: this.width < 1 ? 1 : this.width,
+				height: 0,
+				//extrudedHeight: 100000,
+				width: 10000,
+				//granularity: 0,
 				vertexFormat : Cesium.EllipsoidSurfaceAppearance.VERTEX_FORMAT,
 				ellipsoid : this.ellipsoid
 			});
@@ -902,8 +897,8 @@ var DrawHelper = (function() {
 		this.startDrawingPolyshape(true, options);
 	}
 
-	_.prototype.startDrawingPolyline = function(options) {
-		var options = copyOptions(options, defaultPolylineOptions);
+	_.prototype.startDrawingCorridor = function(options) {
+		var options = copyOptions(options, defaultCorridorOptions);
 		this.startDrawingPolyshape(false, options);
 	}
 
@@ -911,7 +906,7 @@ var DrawHelper = (function() {
 
 		this.startDrawing(
 			function() {
-				groundPrimitives.remove(poly);
+				primitives.remove(poly);
 				markers.remove();
 				mouseHandler.destroy();
 				tooltip.setVisible(false);
@@ -920,7 +915,7 @@ var DrawHelper = (function() {
 
 		var _self = this;
 		var scene = this._scene;
-		var groundPrimitives = scene.groundPrimitives;
+		var primitives = scene.primitives;
 		var tooltip = this._tooltip;
 
 		var minPoints = isPolygon ? 3 : 2;
@@ -928,10 +923,10 @@ var DrawHelper = (function() {
 		if(isPolygon) {
 			poly = new DrawHelper.PolygonPrimitive(options);
 		} else {
-			poly = new DrawHelper.PolylinePrimitive(options);
+			poly = new DrawHelper.CorridorPrimitive(options);
 		}
 		poly.asynchronous = false;
-		groundPrimitives.add(poly);
+		primitives.add(poly);
 
 		var positions = [];
 		var markers = new _.BillboardGroup(this, defaultBillboard);
@@ -1024,7 +1019,7 @@ var DrawHelper = (function() {
 
 			function() {
 				if(extent != null) {
-					groundPrimitives.remove(extent);
+					primitives.remove(extent);
 				}
 				markers.remove();
 				mouseHandler.destroy();
@@ -1034,7 +1029,7 @@ var DrawHelper = (function() {
 
 		var _self = this;
 		var scene = this._scene;
-		var groundPrimitives = this._scene.groundPrimitives;
+		var primitives = this._scene.primitives;
 		var tooltip = this._tooltip;
 
 		var firstPoint = null;
@@ -1048,7 +1043,7 @@ var DrawHelper = (function() {
 				extent = new Cesium.RectanglePrimitive();
 				extent.asynchronous = false;
 
-				groundPrimitives.add(extent);
+				primitives.add(extent);
 			}
 			extent.rectangle = value;
 			// update the markers
@@ -1107,7 +1102,7 @@ var DrawHelper = (function() {
 		this.startDrawing(
 			function cleanUp() {
 				if(circle != null) {
-					groundPrimitives.remove(circle);
+					primitives.remove(circle);
 				}
 				markers.remove();
 				mouseHandler.destroy();
@@ -1117,7 +1112,7 @@ var DrawHelper = (function() {
 
 		var _self = this;
 		var scene = this._scene;
-		var groundPrimitives = this._scene.groundPrimitives;
+		var primitives = this._scene.primitives;
 		var tooltip = this._tooltip;
 
 		var circle = null;
@@ -1138,7 +1133,7 @@ var DrawHelper = (function() {
 							asynchronous: false,
 							material : options.material
 						});
-						groundPrimitives.add(circle);
+						primitives.add(circle);
 						markers = new _.BillboardGroup(_self, defaultBillboard);
 						markers.addBillboards([cartesian]);
 					} else {
@@ -1234,11 +1229,13 @@ var DrawHelper = (function() {
 			if(this._highlighted && this._highlighted == highlighted) {
 				return;
 			}
+
 			// disable if already in edit mode
 			if(this._editMode === true) {
 				return;
 			}
 			this._highlighted = highlighted;
+
 			// highlight by creating an outline polygon matching the polygon points
 			if(highlighted) {
 				// make sure all other shapes are not highlighted
@@ -1392,23 +1389,23 @@ var DrawHelper = (function() {
 
 		}
 
-		DrawHelper.PolylinePrimitive.prototype.setEditable = function() {
+		DrawHelper.CorridorPrimitive.prototype.setEditable = function() {
 
 			if(this.setEditMode) {
 				return;
 			}
 
-			var polyline = this;
-			polyline.isPolygon = false;
-			polyline.asynchronous = false;
+			var corridor = this;
+			corridor.isPolygon = false;
+			corridor.asynchronous = false;
 
-			drawHelper.registerEditableShape(polyline);
+			drawHelper.registerEditableShape(corridor);
 
-			polyline.setEditMode = setEditMode;
+			corridor.setEditMode = setEditMode;
 
 			var originalWidth = this.width;
 
-			polyline.setHighlighted = function(highlighted) {
+			corridor.setHighlighted = function(highlighted) {
 				// disable if already in edit mode
 				if(this._editMode === true) {
 					return;
@@ -1421,13 +1418,13 @@ var DrawHelper = (function() {
 				}
 			}
 
-			polyline.getExtent = function() {
+			corridor.getExtent = function() {
 				return Cesium.Extent.fromCartographicArray(ellipsoid.cartesianArrayToCartographicArray(this.positions));
 			}
 
-			enhanceWithListeners(polyline);
+			enhanceWithListeners(corridor);
 
-			polyline.setEditMode(false);
+			corridor.setEditMode(false);
 
 		}
 
@@ -1728,12 +1725,12 @@ var DrawHelper = (function() {
 
 			var drawOptions = {
 				markerIcon: "fa-map-marker",
-				polylineIcon: "fa-minus",
+				corridorIcon: "fa-minus",
 				polygonIcon: "fa-bookmark-o",
 				circleIcon: "fa-circle-thin",
 				extentIcon: "fa-square-o",
 				clearIcon: "fa-trash-o",
-				polylineDrawingOptions: defaultPolylineOptions,
+				corridorDrawingOptions: defaultCorridorOptions,
 				polygonDrawingOptions: defaultPolygonOptions,
 				extentDrawingOptions: defaultExtentOptions,
 				circleDrawingOptions: defaultCircleOptions
