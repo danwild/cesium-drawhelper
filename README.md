@@ -8,7 +8,7 @@ cesium-ng-drawhelper
 Download repo or `$ bower install cesium-ng-drawhelper`
 
 Add the `cesium.drawhelper` module to your angular app, then use the `drawHelperService` to access draw functions.<br/>
-(before use, you must init `drawHelperService.init(myCesiumObject)` with your cesium Viewer or Widget). 
+(before use, you must pass in your Cesium Viewer or Widget to init `drawHelperService.init(myCesiumObject)`). 
 
 All draw functions accept a callback function in the options object which will be called with the created primitive.
 
@@ -22,6 +22,7 @@ Now uses <a href="https://cesiumjs.org/Cesium/Build/Documentation/GroundPrimitiv
 	<li>Trigger callback function on edit</li>
     <li>Need to inspect function throwing error on circles</li>
     <li>Continue to remove unused plugin components</li>
+    <li>Added a 'Fence' geom (extruded Polyline), needs an update so that billboard markers match the height of the fence.</li>
 </ul>
 	
 </ul>

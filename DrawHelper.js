@@ -211,7 +211,7 @@ var DrawHelper = (function() {
 	}
 
 	var material = Cesium.Material.fromType(Cesium.Material.ColorType);
-	material.uniforms.color = new Cesium.Color(0, 0, 153, 0.3);
+	material.uniforms.color = new Cesium.Color(0, 0, 153, 1);
 
 	var defaultShapeOptions = {
 		ellipsoid: Cesium.Ellipsoid.WGS84,
@@ -238,7 +238,12 @@ var DrawHelper = (function() {
 		geodesic: true,
 		appearance: new Cesium.EllipsoidSurfaceAppearance({
 			aboveGround : false
-		})
+		}),
+		isPrimitive: false,
+		height: 0,
+		extrudedHeight: 0,
+		width: 10000
+
 	});
 
 
@@ -256,6 +261,7 @@ var DrawHelper = (function() {
 			this._height = undefined;
 			this._textureRotationAngle = undefined;
 			this._id = undefined;
+			this._isPrimitive = undefined;
 
 			// set the flags to initiate a first drawing
 			this._createPrimitive = true;
@@ -280,12 +286,11 @@ var DrawHelper = (function() {
 
 
 			if (!Cesium.defined(this.ellipsoid)) {
-				throw new Cesium.DeveloperError('this.ellipsoid must be defined.');
+				//throw new Cesium.DeveloperError('this.ellipsoid must be defined.');
 			}
 
 			if (!Cesium.defined(this.appearance)) {
-				console.log("this.material must be defined.");
-				//throw new Cesium.DeveloperError('this.material must be defined.');
+				throw new Cesium.DeveloperError('this.material must be defined.');
 			}
 
 			if (this.granularity < 0.0) {
@@ -296,7 +301,7 @@ var DrawHelper = (function() {
 				return;
 			}
 
-			if (!this._createPrimitive && (!Cesium.defined(this._groundPrimitive))) {
+			if (!this._createPrimitive && (!Cesium.defined(this._primitive))) {
 				// No positions/hierarchy to draw
 				return;
 			}
@@ -320,45 +325,87 @@ var DrawHelper = (function() {
 				this._textureRotationAngle = this.textureRotationAngle;
 				this._id = this.id;
 				this._pickPrimitive = null;
-				this._groundPrimitive = this._groundPrimitive && this._groundPrimitive.destroy();
+				this._isPrimitive = this.isPrimitive;
+				this._primitive = this._primitive && this._primitive.destroy();
 
+				// render with Primitive
+				if(this.hasOwnProperty("isPrimitive") && this._isPrimitive){
 
-				this._groundPrimitive = new Cesium.GroundPrimitive({
-
-					allowPicking: true,
-					geometryInstance: new Cesium.GeometryInstance({
-						geometry: geometry,
-						id: this,
-						pickPrimitive: this,
-						attributes: {
-							color: new Cesium.ColorGeometryInstanceAttribute(0.0, 1.0, 1.0, 0.5),
-						}
-					}),
-					asynchronous: this.asynchronous
-				});
-
-				this._outlinePolygon = this._outlinePolygon && this._outlinePolygon.destroy();
-
-				if(this.strokeColor && this.getOutlineGeometry) {
-
-					// create the highlighting frame
-					this._outlinePolygon = new Cesium.GroundPrimitive({
-
-						geometryInstance : new Cesium.GeometryInstance({
-							geometry : this.getOutlineGeometry(),
-							id: this,
-							attributes : {
-								color : new Cesium.ColorGeometryInstanceAttribute(255, 255, 255, 1)
-							}
-						})
+					this._primitive = new Cesium.Primitive({
+						geometryInstances : new Cesium.GeometryInstance({
+							geometry : geometry,
+							id : this.id,
+							pickPrimitive : this
+						}),
+						appearance : this.appearance,
+						asynchronous : this.asynchronous
 					});
+
+					this._outlinePolygon = this._outlinePolygon && this._outlinePolygon.destroy();
+
+					if(this.strokeColor && this.getOutlineGeometry) {
+
+						// create the highlighting frame
+						this._outlinePolygon = new Cesium.Primitive({
+							geometryInstances : new Cesium.GeometryInstance({
+								geometry : this.getOutlineGeometry(),
+								attributes : {
+									color : Cesium.ColorGeometryInstanceAttribute.fromColor(this.strokeColor)
+								}
+							}),
+							appearance : new Cesium.PerInstanceColorAppearance({
+								flat : true,
+								renderState : {
+									depthTest : {
+										enabled : true
+									},
+									lineWidth : Math.min(this.strokeWidth || 4.0, context._aliasedLineWidthRange[1])
+								}
+							})
+						});
+					}
+				}
+
+				// render with GroundPrimitive
+				else {
+
+					this._primitive = new Cesium.GroundPrimitive({
+
+						allowPicking: true,
+						geometryInstance: new Cesium.GeometryInstance({
+							geometry: geometry,
+							id: this,
+							pickPrimitive: this,
+							attributes: {
+								color: new Cesium.ColorGeometryInstanceAttribute(0.0, 1.0, 1.0, 0.5),
+							}
+						}),
+						asynchronous: this.asynchronous
+					});
+
+					this._outlinePolygon = this._outlinePolygon && this._outlinePolygon.destroy();
+
+					if (this.strokeColor && this.getOutlineGeometry) {
+
+						// create the highlighting frame
+						this._outlinePolygon = new Cesium.GroundPrimitive({
+
+							geometryInstance: new Cesium.GeometryInstance({
+								geometry: this.getOutlineGeometry(),
+								id: this,
+								attributes: {
+									color: new Cesium.ColorGeometryInstanceAttribute(255, 255, 255, 1)
+								}
+							})
+						});
+					}
 				}
 			}
 
-			var groundPrimitive = this._groundPrimitive;
+			var primitive = this._primitive;
 			//primitive.appearance.material = this.material;
-			groundPrimitive.debugShowBoundingVolume = this.debugShowBoundingVolume;
-			groundPrimitive.update(context, frameState, commandList);
+			primitive.debugShowBoundingVolume = this.debugShowBoundingVolume;
+			primitive.update(context, frameState, commandList);
 			this._outlinePolygon && this._outlinePolygon.update(context, frameState, commandList);
 		};
 
@@ -629,7 +676,6 @@ var DrawHelper = (function() {
 			options = copyOptions(options, defaultCorridorOptions);
 
 			this.initialiseOptions(options);
-
 		}
 
 		_.prototype = new ChangeablePrimitive();
@@ -666,9 +712,10 @@ var DrawHelper = (function() {
 
 			return new Cesium.CorridorGeometry({
 				positions: this.positions,
-				height: 0,
-				//extrudedHeight: 100000,
-				width: 10000,
+				isPrimitive: this.isPrimitive,
+				height: 1,
+				extrudedHeight: (this.isPrimitive) ? this.extrudedHeight : 0,
+				width: (this.isPrimitive) ? 10 : 10000,
 				//granularity: 0,
 				vertexFormat : Cesium.EllipsoidSurfaceAppearance.VERTEX_FORMAT,
 				ellipsoid : this.ellipsoid
@@ -714,13 +761,16 @@ var DrawHelper = (function() {
 
 	_.BillboardGroup.prototype.createBillboard = function(position, callbacks) {
 
+		//console.log("billboard pos");
+		//console.log(position);
+
 		var billboard = this._billboards.add({
 			show : true,
 			position : position,
 			pixelOffset : new Cesium.Cartesian2(this._options.shiftX, this._options.shiftY),
 			eyeOffset : new Cesium.Cartesian3(0.0, 0.0, 0.0),
-			horizontalOrigin : Cesium.HorizontalOrigin.CENTER,
-			verticalOrigin : Cesium.VerticalOrigin.CENTER,
+			horizontalOrigin : Cesium.HorizontalOrigin.BOTTOM,
+			verticalOrigin : Cesium.VerticalOrigin.BOTTOM,
 			scale : 1.0,
 			image: this._options.iconUrl,
 			color : new Cesium.Color(1.0, 1.0, 1.0, 1.0)
@@ -747,6 +797,7 @@ var DrawHelper = (function() {
 					// TODO - start the drag handlers here
 					// create handlers for mouseOut and leftUp for the billboard and a mouseMove
 					function onDrag(position) {
+
 						billboard.position = position;
 						// find index
 						for (var i = 0, I = _self._orderedBillboards.length; i < I && _self._orderedBillboards[i] != billboard; ++i);
@@ -859,7 +910,7 @@ var DrawHelper = (function() {
 
 		var _self = this;
 		var scene = this._scene;
-		var groundPrimitives = scene.groundPrimitives;
+		//var groundPrimitives = scene.groundPrimitives;
 		var tooltip = this._tooltip;
 
 		var markers = new _.BillboardGroup(this, options);
@@ -897,8 +948,10 @@ var DrawHelper = (function() {
 		this.startDrawingPolyshape(true, options);
 	}
 
-	_.prototype.startDrawingCorridor = function(options) {
+	_.prototype.startDrawingCorridor = function(isPrimitive, extrudedHeight, options) {
 		var options = copyOptions(options, defaultCorridorOptions);
+		options.isPrimitive = isPrimitive;
+		options.extrudedHeight = extrudedHeight;
 		this.startDrawingPolyshape(false, options);
 	}
 
@@ -933,11 +986,26 @@ var DrawHelper = (function() {
 
 		var mouseHandler = new Cesium.ScreenSpaceEventHandler(scene.canvas);
 
+		function getElevatedPos(cartesian){
+
+			// if we're drawing a fence, we'll ned to elevate our markers to match
+			var ellipsoid = Cesium.Ellipsoid.WGS84;
+			var carto = ellipsoid.cartesianToCartographic(cartesian.clone());
+			carto.height = options.extrudedHeight || 0;
+			cartesian = ellipsoid.cartographicToCartesian(carto.clone());
+
+			return cartesian;
+		};
+
 		// START - LEFT CLICK
 		mouseHandler.setInputAction(function(movement) {
 			if(movement.position != null) {
 				var cartesian = scene.camera.pickEllipsoid(movement.position, ellipsoid);
+
 				if (cartesian) {
+
+					cartesian = getElevatedPos(cartesian);
+
 					// first click
 					if(positions.length == 0) {
 						positions.push(cartesian.clone());
@@ -950,6 +1018,7 @@ var DrawHelper = (function() {
 					// add new point to polygon
 					// this one will move with the mouse
 					positions.push(cartesian);
+
 					// add marker at the new position
 					markers.addBillboard(cartesian);
 				}
@@ -959,12 +1028,16 @@ var DrawHelper = (function() {
 		// DRAW - MOUSE MOVE
 		mouseHandler.setInputAction(function(movement) {
 			var position = movement.endPosition;
+
 			if(position != null) {
 				if(positions.length == 0) {
 					tooltip.showAt(position, "<p>Click to add first point</p>");
 				} else {
 					var cartesian = scene.camera.pickEllipsoid(position, ellipsoid);
 					if (cartesian) {
+
+						cartesian = getElevatedPos(cartesian);
+
 						positions.pop();
 						// make sure it is slightly different
 						cartesian.y += (1 + Math.random());
@@ -986,23 +1059,27 @@ var DrawHelper = (function() {
 		mouseHandler.setInputAction(function(movement) {
 			var position = movement.position;
 			if(position != null) {
+
 				if(positions.length < minPoints + 2) {
 					return;
 				} else {
 					var cartesian = scene.camera.pickEllipsoid(position, ellipsoid);
 					if (cartesian) {
+
+						//cartesian = getElevatedPos(cartesian);
+
+						positions.pop();
+						positions.pop();
+
 						_self.stopDrawing();
 						if(typeof options.callback == 'function') {
-							// remove overlapping ones
-							var index = positions.length - 1;
-							// TODO - calculate some epsilon based on the zoom level
-							var epsilon = Cesium.Math.EPSILON3;
-							for(; index > 0 && positions[index].equalsEpsilon(positions[index - 1], epsilon); index--) {}
-							options.callback(positions.splice(0, index + 1));
+							options.callback(positions);
 						}
 					}
 				}
 			}
+
+
 		}, Cesium.ScreenSpaceEventType.LEFT_DOUBLE_CLICK);
 
 	}
@@ -1267,8 +1344,10 @@ var DrawHelper = (function() {
 
 				// create the markers and handlers for the editing
 				if(this._markers == null) {
+
 					var markers = new _.BillboardGroup(drawHelper, dragBillboard);
 					var editMarkers = new _.BillboardGroup(drawHelper, dragHalfBillboard);
+
 					// function for updating the edit markers around a certain point
 					function updateHalfMarkers(index, positions) {
 						// update the half markers before and after the index
@@ -1314,6 +1393,7 @@ var DrawHelper = (function() {
 							}
 						}
 					};
+
 					// add billboards and keep an ordered list of them for the polygon edges
 					markers.addBillboards(_self.positions, handleMarkerChanges);
 					this._markers = markers;

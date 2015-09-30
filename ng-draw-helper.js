@@ -10,12 +10,14 @@ angular.module('cesium.drawhelper', [])
  * A collection of helper functions for drawing shapes etc.
  *
  * Point Marker
- * PolyLine
+ * PolyLine (renders with Primitive, for extruded 'fence')
+ * CorridorGeom
  * Polygon
  * Extent
  * Circle
  *
  */
+
 .factory('drawHelperService', [function() {
 
 	var service = {};
@@ -36,19 +38,17 @@ angular.module('cesium.drawhelper', [])
 
 	/**
 	 *
-     * @param cesiumWidget Object
+	 * @param cesiumWidget Object
 	 *
 	 * Should work with Cesium.Viewer or Cesium.Widget
 	 *
 	 */
 	service.init = function(cesiumWidget) {
 
-		service.active = true;
-
 		// create the scene with a master PrimitivesCollection to hold our shapes
 		service.scene = cesiumWidget.scene;
 		primitivesCollection.add(billboardCollection);
-		service.scene.primitives.add(primitivesCollection);
+		service.scene.groundPrimitives.add(primitivesCollection);
 
 		// start the draw helper to enable shape creation and editing
 		service.drawHelper = new DrawHelper(cesiumWidget);
@@ -65,7 +65,7 @@ angular.module('cesium.drawhelper', [])
 	 * Wrapper for DrawHelper.startDrawingMarker
 	 *
 	 * @param options {
-	 *      callback: Function, // returns the created primitive
+	 *      callback: Function,
 	 *      imgUrl: String
 	 * }
 	 *
@@ -115,38 +115,88 @@ angular.module('cesium.drawhelper', [])
 
 		service.active = true;
 
-		service.drawHelper.startDrawingCorridor({
+		service.drawHelper.startDrawingCorridor(
+			options.isPrimitive,
+			0,
+			{
 
-			callback: function(positions) {
+				callback: function(positions) {
 
-				service.loggingMessage('Corridor created with ' + positions.length + ' points');
-				var corridor = new DrawHelper.CorridorPrimitive({
-					positions: positions,
-					width: options.width || 5,
-					geodesic: options.hasOwnProperty("geodesic") ? options.geodesic : true
-				});
-
-				primitivesCollection.add(corridor);
-
-				if(options.hasOwnProperty("editable") && options.editable){
-
-					corridor.setEditable();
-					corridor.addListener('onEdited', function(event) {
-						service.loggingMessage('Corridor edited, ' + event.positions.length + ' points');
+					service.loggingMessage('Corridor created with ' + positions.length + ' points');
+					var corridor = new DrawHelper.CorridorPrimitive({
+						positions: positions,
+						width: options.width || 10000,
+						height: options.height || 0,
+						geodesic: options.hasOwnProperty("geodesic") ? options.geodesic : true
 					});
+
+					primitivesCollection.add(corridor);
+
+					if(options.hasOwnProperty("editable") && options.editable){
+
+						corridor.setEditable();
+						corridor.addListener('onEdited', function(event) {
+							service.loggingMessage('Corridor edited, ' + event.positions.length + ' points');
+						});
+					}
+					options.hasOwnProperty('callback') ? options.callback(corridor) : console.log(corridor);
 				}
-				options.hasOwnProperty('callback') ? options.callback(corridor) : console.log(corridor);
-			}
-		});
+			});
 	};
 
+	/**
+	 *
+	 * Wrapper for DrawHelper.startDrawingFence
+	 *
+	 * @param options {
+	 *      callback: Function,
+	 *      isPrimitive: boolean,
+	 *      editable: Boolean,
+	 *      width: Number,
+	 *      geodesic: Boolean
+	 * }
+	 *
+	 */
+	service.drawFence = function(options){
 
-		/**
+		service.active = true;
+
+		service.drawHelper.startDrawingCorridor(
+			options.isPrimitive, // we can extrude Primitives, but not GroundPrimitives
+			options.extrudedHeight, // also sets height of billboard markers
+			{
+				callback: function(positions) {
+
+					service.loggingMessage('Fence created with ' + positions.length + ' points');
+					var fence = new DrawHelper.CorridorPrimitive({
+						isPrimitive: true,
+						positions: positions,
+						width: options.width || 10,
+						height: options.height || 0,
+						extrudedHeight: options.extrudedHeight || 100,
+						geodesic: options.hasOwnProperty("geodesic") ? options.geodesic : true
+					});
+
+					primitivesCollection.add(fence);
+
+					if(options.hasOwnProperty("editable") && options.editable){
+
+						fence.setEditable();
+						fence.addListener('onEdited', function(event) {
+							service.loggingMessage('Fence edited, ' + event.positions.length + ' points');
+						});
+					}
+					options.hasOwnProperty('callback') ? options.callback(fence) : console.log(fence);
+				}
+			});
+	};
+
+	/**
 	 *
 	 * Wrapper for DrawHelper.startDrawingPolygon
 	 *
 	 * @param options {
-	 *      callback: Function, // returns the created primitive
+	 *      callback: Function,
 	 *       editable: Boolean
 	 * }
 	 *
@@ -184,10 +234,10 @@ angular.module('cesium.drawhelper', [])
 
 	/**
 	 *
-	 * Wrapper for DrawHelper.startDrawingPolygon
+	 * Wrapper for DrawHelper.startDrawingExtent
 	 *
 	 * @param options {
-	 *      callback: Function, // returns the created primitive
+	 *      callback: Function,
 	 *      editable: Boolean
 	 * }
 	 *
@@ -218,6 +268,7 @@ angular.module('cesium.drawhelper', [])
 				};
 
 				options.hasOwnProperty('callback') ? options.callback(extentPrimitive) : console.log(extentPrimitive);
+
 			}
 		});
 	};
@@ -227,7 +278,7 @@ angular.module('cesium.drawhelper', [])
 	 * Wrapper for DrawHelper.startDrawingCircle
 	 *
 	 * @param options {
-	 *      callback: Function, // returns the created primitive
+	 *      callback: Function,
 	 *      editable: Boolean
 	 * }
 	 *
@@ -264,16 +315,30 @@ angular.module('cesium.drawhelper', [])
 
 	service.removeAllPrimitives = function(){
 
+		console.log('_viewer');
+		console.log(service.scene);
+
 		primitivesCollection.removeAll();
+
+		console.log(service.scene);
 
 		// reset collections
 		primitivesCollection = new Cesium.PrimitiveCollection();
 		billboardCollection = new Cesium.BillboardCollection();
 		primitivesCollection.add(billboardCollection);
-		service.scene.primitives.add(primitivesCollection);
+		service.scene.groundPrimitives.add(primitivesCollection);
+	};
+
+	/**
+	 * @param cartographic
+	 * @param precision
+	 * @returns {string}
+	 */
+	service.getDisplayLatLngString = function(cartographic, precision) {
+		return Cesium.Math.toDegrees(cartographic.longitude).toFixed(2) + ", " + Cesium.Math.toDegrees(cartographic.latitude).toFixed(2);
 	};
 
 
 	return service;
 
-}])
+}]);
