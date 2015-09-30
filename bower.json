@@ -9,6 +9,7 @@
   "description": "An AngularJS service containing a collection of helper functions for drawing/editing shapes with CesiumJS, using DrawHelper",
   "main": [
     "DrawHelper.js",
+	"ng-draw-helper.js",
     "DrawHelper.css"
   ],
   "keywords": [
