@@ -16,7 +16,7 @@ var DrawHelper = (function() {
 	// constructor
 	function _(cesiumWidget) {
 		this._scene = cesiumWidget.scene;
-		this._tooltip = createTooltip(cesiumWidget.container, 350, 0); // offsetX, offsetY
+		this._tooltip = createTooltip(cesiumWidget.container, 0, 0); // offsetX, offsetY
 
 		this.initialiseHandlers();
 		this.enhancePrimitives();
