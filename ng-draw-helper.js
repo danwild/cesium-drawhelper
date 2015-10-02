@@ -54,7 +54,7 @@ angular.module('cesium.drawhelper', [])
 			service.drawHelper = new DrawHelper(cesiumWidget);
 
 			// init logging
-			var logging = document.getElementById('logging');
+			var logging = document.getElementById('drawlogging');
 			service.loggingMessage = function (message) {
 				logging.innerHTML = message;
 			}
