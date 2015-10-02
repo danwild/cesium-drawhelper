@@ -861,8 +861,10 @@ var DrawHelper = (function() {
 	 */
 	_.BillboardGroup.prototype.createNumberedBillboard = function(position, index) {
 
-		var pinBuilder = new Cesium.PinBuilder();
+		console.log("createNumberedBillboard");
+		console.log(index);
 
+		var pinBuilder = new Cesium.PinBuilder();
 		var billboard = this._billboards.add({
 			show : true,
 			position : position,
@@ -1113,9 +1115,9 @@ var DrawHelper = (function() {
 					var cartesian = scene.camera.pickEllipsoid(position, ellipsoid);
 					if (cartesian) {
 
-						//cartesian = getElevatedPos(cartesian);
-
+						markers.removeBillboard(positions.length - 1);
 						positions.pop();
+						markers.removeBillboard(positions.length - 1);
 						positions.pop();
 
 						_self.stopDrawing();
