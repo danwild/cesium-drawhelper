@@ -22,13 +22,13 @@ Now uses <a href="https://cesiumjs.org/Cesium/Build/Documentation/GroundPrimitiv
 	<li>Trigger callback function on edit</li>
     <li>Need to inspect function throwing error on circles</li>
     <li>Continue to remove unused plugin components</li>
-    <li>Added a 'Fence' geom (extruded Polyline), needs an update so that billboard markers match the height of the fence.</li>
 </ul>
 	
 </ul>
 
 <h2>Notes</h2>
 <ul>
-	<li>...</li>
+	<li>Added a `useNumberedPins` option for `drawFence`, which uses `Cesium.PinBuilder` to increment the markers. 
+	Note that this shouldn't be used with and setEditable enabled, as the mid way points are not considered in the pin indexing.</li>
 </ul>
 

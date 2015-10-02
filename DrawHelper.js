@@ -16,7 +16,7 @@ var DrawHelper = (function() {
 	// constructor
 	function _(cesiumWidget) {
 		this._scene = cesiumWidget.scene;
-		this._tooltip = createTooltip(cesiumWidget.container, 0, 0); // offsetX, offsetY
+		this._tooltip = createTooltip(cesiumWidget.container, 350, 0); // offsetX, offsetY
 
 		this.initialiseHandlers();
 		this.enhancePrimitives();
@@ -178,7 +178,7 @@ var DrawHelper = (function() {
 	}
 
 	_.prototype.stopDrawing = function() {
-		// check for cleanUp first
+		//check for cleanUp first
 		if(this.editCleanUp) {
 			this.editCleanUp();
 			this.editCleanUp = null;
@@ -759,10 +759,8 @@ var DrawHelper = (function() {
 		this._orderedBillboards = [];
 	}
 
-	_.BillboardGroup.prototype.createBillboard = function(position, callbacks) {
 
-		//console.log("billboard pos");
-		//console.log(position);
+	_.BillboardGroup.prototype.createBillboard = function(position, callbacks) {
 
 		var billboard = this._billboards.add({
 			show : true,
@@ -853,12 +851,44 @@ var DrawHelper = (function() {
 		return billboard;
 	}
 
+	/**
+	 *
+	 * Our custom numbered, non editable billboard.
+	 *
+	 * @param position
+	 * @param index
+	 * @returns {*}
+	 */
+	_.BillboardGroup.prototype.createNumberedBillboard = function(position, index) {
+
+		var pinBuilder = new Cesium.PinBuilder();
+
+		var billboard = this._billboards.add({
+			show : true,
+			position : position,
+			pixelOffset : new Cesium.Cartesian2(this._options.shiftX, this._options.shiftY),
+			eyeOffset : new Cesium.Cartesian3(0.0, 0.0, 0.0),
+			horizontalOrigin : Cesium.HorizontalOrigin.BOTTOM,
+			verticalOrigin : Cesium.VerticalOrigin.BOTTOM,
+			scale : 1.0,
+			image: pinBuilder.fromText(index, Cesium.Color.ROYALBLUE, 48).toDataURL(),
+			color : new Cesium.Color(1.0, 1.0, 1.0, 1.0)
+		});
+
+
+		return billboard;
+	}
+
 	_.BillboardGroup.prototype.insertBillboard = function(index, position, callbacks) {
 		this._orderedBillboards.splice(index, 0, this.createBillboard(position, callbacks));
 	}
 
 	_.BillboardGroup.prototype.addBillboard = function(position, callbacks) {
 		this._orderedBillboards.push(this.createBillboard(position, callbacks));
+	}
+
+	_.BillboardGroup.prototype.addNumberedBillboard = function(position, index) {
+		this._orderedBillboards.push(this.createNumberedBillboard(position, index));
 	}
 
 	_.BillboardGroup.prototype.addBillboards = function(positions, callbacks) {
@@ -910,7 +940,6 @@ var DrawHelper = (function() {
 
 		var _self = this;
 		var scene = this._scene;
-		//var groundPrimitives = scene.groundPrimitives;
 		var tooltip = this._tooltip;
 
 		var markers = new _.BillboardGroup(this, options);
@@ -948,10 +977,11 @@ var DrawHelper = (function() {
 		this.startDrawingPolyshape(true, options);
 	}
 
-	_.prototype.startDrawingCorridor = function(isPrimitive, extrudedHeight, options) {
+	_.prototype.startDrawingCorridor = function(isPrimitive, extrudedHeight, useNumberedPins, options) {
 		var options = copyOptions(options, defaultCorridorOptions);
 		options.isPrimitive = isPrimitive;
 		options.extrudedHeight = extrudedHeight;
+		options.useNumberedPins = useNumberedPins;
 		this.startDrawingPolyshape(false, options);
 	}
 
@@ -959,10 +989,15 @@ var DrawHelper = (function() {
 
 		this.startDrawing(
 			function() {
+
 				primitives.remove(poly);
-				markers.remove();
 				mouseHandler.destroy();
 				tooltip.setVisible(false);
+
+				// keep our numbered markers after finish drawing
+				if(!options.useNumberedPins){
+					markers.remove();
+				}
 			}
 		);
 
@@ -988,7 +1023,7 @@ var DrawHelper = (function() {
 
 		function getElevatedPos(cartesian){
 
-			// if we're drawing a fence, we'll ned to elevate our markers to match
+			// if we're drawing a fence, we'll need to elevate our markers to match fence extrudedHeight
 			var ellipsoid = Cesium.Ellipsoid.WGS84;
 			var carto = ellipsoid.cartesianToCartographic(cartesian.clone());
 			carto.height = options.extrudedHeight || 0;
@@ -1009,7 +1044,13 @@ var DrawHelper = (function() {
 					// first click
 					if(positions.length == 0) {
 						positions.push(cartesian.clone());
-						markers.addBillboard(positions[0]);
+
+						if(options.useNumberedPins){
+							markers.addNumberedBillboard(positions[0], 1); // first pin -> #1
+						}
+						else {
+							markers.addBillboard(positions[0]);
+						}
 					}
 					if(positions.length >= minPoints) {
 						poly.positions = positions;
@@ -1020,7 +1061,13 @@ var DrawHelper = (function() {
 					positions.push(cartesian);
 
 					// add marker at the new position
-					markers.addBillboard(cartesian);
+					if(options.useNumberedPins){
+						markers.addNumberedBillboard(cartesian, positions.length);
+					}
+					else {
+						markers.addBillboard(cartesian);
+					}
+
 				}
 			}
 		}, Cesium.ScreenSpaceEventType.LEFT_CLICK);
@@ -1334,8 +1381,10 @@ var DrawHelper = (function() {
 			if(this._editMode == editMode) {
 				return;
 			}
+
 			// make sure all other shapes are not in edit mode before starting the editing of this shape
 			drawHelper.disableAllHighlights();
+
 			// display markers
 			if(editMode) {
 				drawHelper.setEdited(this);
@@ -1468,6 +1517,11 @@ var DrawHelper = (function() {
 			}
 
 		}
+
+
+		//function removeEditHandlers(){
+		//
+		//}
 
 		DrawHelper.CorridorPrimitive.prototype.setEditable = function() {
 
