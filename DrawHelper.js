@@ -861,9 +861,6 @@ var DrawHelper = (function() {
 	 */
 	_.BillboardGroup.prototype.createNumberedBillboard = function(position, index) {
 
-		console.log("createNumberedBillboard");
-		console.log(index);
-
 		var pinBuilder = new Cesium.PinBuilder();
 		var billboard = this._billboards.add({
 			show : true,
