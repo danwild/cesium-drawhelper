@@ -28,7 +28,7 @@ Now uses <a href="https://cesiumjs.org/Cesium/Build/Documentation/GroundPrimitiv
 
 <h2>Notes</h2>
 <ul>
-	<li>Added a `useNumberedPins` option for `drawFence`, which uses `Cesium.PinBuilder` to increment the markers. 
+	<li>Added a <code>useNumberedPins</code> option for <code>drawFence</code>, which uses <code>Cesium.PinBuilder</code> to increment the markers. 
 	Note that this shouldn't be used with and setEditable enabled, as the mid way points are not considered in the pin indexing.</li>
 </ul>
 
