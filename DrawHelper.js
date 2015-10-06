@@ -246,6 +246,17 @@ var DrawHelper = (function() {
 
 	});
 
+	var defaultPolylineOptions = copyOptions(defaultShapeOptions, {
+		width: 5,
+		geodesic: true,
+		granularity: 10000,
+		isPrimitive: true,
+		appearance: new Cesium.PolylineMaterialAppearance({
+			aboveGround : false
+		}),
+		material : material
+	});
+
 
 	var ChangeablePrimitive = (function() {
 
@@ -725,6 +736,61 @@ var DrawHelper = (function() {
 		return _;
 	})();
 
+	_.PolylinePrimitive = (function() {
+
+		function _(options) {
+
+			options = copyOptions(options, defaultPolylineOptions);
+
+			this.initialiseOptions(options);
+
+		}
+
+		_.prototype = new ChangeablePrimitive();
+
+		_.prototype.setPositions = function(positions) {
+			this.setAttribute('positions', positions);
+		};
+
+		_.prototype.setWidth = function(width) {
+			this.setAttribute('width', width);
+		};
+
+		_.prototype.setGeodesic = function(geodesic) {
+			this.setAttribute('geodesic', geodesic);
+		};
+
+		_.prototype.getPositions = function() {
+			return this.getAttribute('positions');
+		};
+
+		_.prototype.getWidth = function() {
+			return this.getAttribute('width');
+		};
+
+		_.prototype.getGeodesic = function(geodesic) {
+			return this.getAttribute('geodesic');
+		};
+
+		_.prototype.getGeometry = function() {
+
+			if (!Cesium.defined(this.positions) || this.positions.length < 2) {
+				return;
+			}
+
+			return new Cesium.PolylineGeometry({
+				positions: this.positions,
+				isPrimitive: true,
+				height : this.height,
+				width: this.width < 1 ? 1 : this.width,
+				vertexFormat : Cesium.EllipsoidSurfaceAppearance.VERTEX_FORMAT,
+				ellipsoid : this.ellipsoid
+			});
+		}
+
+		return _;
+	})();
+
 	var defaultBillboard = {
 		iconUrl: "bower_components/cesium-ng-drawhelper/img/dragIcon.png",
 		shiftX: 0,
@@ -976,6 +1042,14 @@ var DrawHelper = (function() {
 		this.startDrawingPolyshape(true, options);
 	}
 
+	_.prototype.startDrawingPolyline = function(options) {
+		var options = copyOptions(options, defaultPolylineOptions);
+		// these aren't optional for polylines
+		options.isPolyline = true;
+		options.isPrimitive = true;
+		this.startDrawingPolyshape(false, options);
+	}
+
 	_.prototype.startDrawingCorridor = function(isPrimitive, extrudedHeight, useNumberedPins, options) {
 		var options = copyOptions(options, defaultCorridorOptions);
 		options.isPrimitive = isPrimitive;
@@ -1009,7 +1083,11 @@ var DrawHelper = (function() {
 		var poly;
 		if(isPolygon) {
 			poly = new DrawHelper.PolygonPrimitive(options);
-		} else {
+		}
+		else if(options.hasOwnProperty('isPolyline') && options.isPolyline){
+			poly = new DrawHelper.PolylinePrimitive(options);
+		}
+		else {
 			poly = new DrawHelper.CorridorPrimitive(options);
 		}
 		poly.asynchronous = false;
@@ -1517,10 +1595,44 @@ var DrawHelper = (function() {
 
 		}
 
+		DrawHelper.PolylinePrimitive.prototype.setEditable = function() {
 
-		//function removeEditHandlers(){
-		//
-		//}
+			if(this.setEditMode) {
+				return;
+			}
+
+			var polyline = this;
+			polyline.isPolygon = false;
+			polyline.asynchronous = false;
+
+			drawHelper.registerEditableShape(polyline);
+
+			polyline.setEditMode = setEditMode;
+
+			var originalWidth = this.width;
+
+			polyline.setHighlighted = function(highlighted) {
+				// disable if already in edit mode
+				if(this._editMode === true) {
+					return;
+				}
+				if(highlighted) {
+					drawHelper.setHighlighted(this);
+					this.setWidth(originalWidth * 2);
+				} else {
+					this.setWidth(originalWidth);
+				}
+			}
+
+			polyline.getExtent = function() {
+				return Cesium.Extent.fromCartographicArray(ellipsoid.cartesianArrayToCartographicArray(this.positions));
+			}
+
+			enhanceWithListeners(polyline);
+
+			polyline.setEditMode(false);
+
+		}
 
 		DrawHelper.CorridorPrimitive.prototype.setEditable = function() {
 
@@ -1859,10 +1971,12 @@ var DrawHelper = (function() {
 			var drawOptions = {
 				markerIcon: "fa-map-marker",
 				corridorIcon: "fa-minus",
+				polylineIcon: "fa-minus",
 				polygonIcon: "fa-bookmark-o",
 				circleIcon: "fa-circle-thin",
 				extentIcon: "fa-square-o",
 				clearIcon: "fa-trash-o",
+				polylineDrawingOptions: defaultPolylineOptions,
 				corridorDrawingOptions: defaultCorridorOptions,
 				polygonDrawingOptions: defaultPolygonOptions,
 				extentDrawingOptions: defaultExtentOptions,

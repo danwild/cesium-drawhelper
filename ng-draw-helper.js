@@ -22,7 +22,7 @@ angular.module('cesium.drawhelper', [])
 
 		var service = {};
 
-		service.active = false;
+		service.initialised = false;
 		service.drawHelper;
 		service.scene;
 		service.loggingMessage;
@@ -73,7 +73,7 @@ angular.module('cesium.drawhelper', [])
 		 */
 		service.drawMarker = function(options){
 
-			service.active = true;
+			service.initialised = true;
 
 			service.drawHelper.startDrawingMarker({
 
@@ -104,16 +104,16 @@ angular.module('cesium.drawhelper', [])
 		 * Wrapper for DrawHelper.startDrawingCorridor
 		 *
 		 * @param options {
-	 *      callback: Function,
-	 *      editable: Boolean,
-	 *      width: Number,
-	 *      geodesic: Boolean
-	 * }
+		 *      callback: Function,
+		 *      editable: Boolean,
+		 *      width: Number,
+		 *      geodesic: Boolean
+		 * }
 		 *
 		 */
 		service.drawCorridor = function(options){
 
-			service.active = true;
+			service.initialised = true;
 
 			service.drawHelper.startDrawingCorridor(
 				options.isPrimitive,
@@ -138,9 +138,55 @@ angular.module('cesium.drawhelper', [])
 							corridor.setEditable();
 							corridor.addListener('onEdited', function(event) {
 								service.loggingMessage('Corridor edited, ' + event.positions.length + ' points');
+								options.hasOwnProperty('callback') ? options.callback(corridor) : console.log(corridor);
 							});
 						}
 						options.hasOwnProperty('callback') ? options.callback(corridor) : console.log(corridor);
+					}
+				});
+		};
+
+		/**
+		 *
+		 * Wrapper for DrawHelper.startDrawingPolyline
+		 *
+		 * @param options {
+		 *      callback: Function,
+		 *      editable: Boolean,
+		 *      width: Number,
+		 *      geodesic: Boolean
+		 * }
+		 *
+		 */
+		service.drawPolyline = function(options){
+
+			service.initialised = true;
+
+			service.drawHelper.startDrawingPolyline(
+				{
+
+					callback: function(positions) {
+
+						service.loggingMessage('Polyline created with ' + positions.length + ' points');
+						var polyline = new DrawHelper.PolylinePrimitive({
+							positions: positions,
+							width: options.width || 10,
+							height: options.height || 0,
+							editable: options.editable,
+							geodesic: options.hasOwnProperty("geodesic") ? options.geodesic : true
+						});
+
+						primitivesCollection.add(polyline);
+
+						if(options.hasOwnProperty("editable") && options.editable){
+
+							polyline.setEditable();
+							polyline.addListener('onEdited', function(event) {
+								service.loggingMessage('Polyline edited, ' + event.positions.length + ' points');
+								options.hasOwnProperty('callback') ? options.callback(polyline) : console.log(polyline);
+							});
+						}
+						options.hasOwnProperty('callback') ? options.callback(polyline) : console.log(polyline);
 					}
 				});
 		};
@@ -160,7 +206,7 @@ angular.module('cesium.drawhelper', [])
 		 */
 		service.drawFence = function(options){
 
-			service.active = true;
+			service.initialised = true;
 
 			service.drawHelper.startDrawingCorridor(
 				options.isPrimitive, // we can extrude Primitives, but not GroundPrimitives
@@ -197,7 +243,7 @@ angular.module('cesium.drawhelper', [])
 		 */
 		service.drawPolygon = function(options){
 
-			service.active = true;
+			service.initialised = true;
 
 			service.drawHelper.startDrawingPolygon({
 
@@ -218,6 +264,7 @@ angular.module('cesium.drawhelper', [])
 						polygon.addListener('onEdited', function (event) {
 							console.log(event);
 							service.loggingMessage('Polygon edited, ' + event.positions.length + ' points');
+							options.hasOwnProperty('callback') ? options.callback(polygon) : console.log(polygon);
 						});
 					}
 
@@ -238,7 +285,7 @@ angular.module('cesium.drawhelper', [])
 		 */
 		service.drawExtent = function(options){
 
-			service.active = true;
+			service.initialised = true;
 
 			service.drawHelper.startDrawingExtent({
 
@@ -258,6 +305,7 @@ angular.module('cesium.drawhelper', [])
 						extentPrimitive.setEditable();
 						extentPrimitive.addListener('onEdited', function (event) {
 							service.loggingMessage('Extent edited: extent is (N: ' + event.extent.north.toFixed(3) + ', E: ' + event.extent.east.toFixed(3) + ', S: ' + event.extent.south.toFixed(3) + ', W: ' + event.extent.west.toFixed(3) + ')');
+							options.hasOwnProperty('callback') ? options.callback(extentPrimitive) : console.log(extentPrimitive);
 						});
 					};
 
@@ -272,14 +320,14 @@ angular.module('cesium.drawhelper', [])
 		 * Wrapper for DrawHelper.startDrawingCircle
 		 *
 		 * @param options {
-	 *      callback: Function,
-	 *      editable: Boolean
-	 * }
+		 *      callback: Function,
+		 *      editable: Boolean
+		 * }
 		 *
 		 */
 		service.drawCircle = function(options){
 
-			service.active = true;
+			service.initialised = true;
 
 			service.drawHelper.startDrawingCircle({
 
@@ -299,6 +347,7 @@ angular.module('cesium.drawhelper', [])
 						circle.setEditable();
 						circle.addListener('onEdited', function (event) {
 							service.loggingMessage('Circle edited: radius is ' + event.radius.toFixed(1) + ' meters');
+							options.hasOwnProperty('callback') ? options.callback(circle) : console.log(circle);
 						});
 					};
 
@@ -309,12 +358,7 @@ angular.module('cesium.drawhelper', [])
 
 		service.removeAllPrimitives = function(){
 
-			console.log('_viewer');
-			console.log(service.scene);
-
 			primitivesCollection.removeAll();
-
-			console.log(service.scene);
 
 			// reset collections
 			primitivesCollection = new Cesium.PrimitiveCollection();
