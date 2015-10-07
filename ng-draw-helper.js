@@ -50,7 +50,7 @@ angular.module('cesium.drawhelper', [])
 		// create the scene with parent PrimitivesCollection to hold our shapes
 		service.scene = cesiumWidget.scene;
 		primitivesCollection.add(billboardCollection);
-		service.scene.groundPrimitives.add(primitivesCollection);
+		service.scene.primitives.add(primitivesCollection);
 
 		// start the draw helper to enable shape creation and editing
 		service.drawHelper = new DrawHelper(cesiumWidget);
@@ -375,7 +375,7 @@ angular.module('cesium.drawhelper', [])
 		primitivesCollection = new Cesium.PrimitiveCollection();
 		billboardCollection = new Cesium.BillboardCollection();
 		primitivesCollection.add(billboardCollection);
-		service.scene.groundPrimitives.add(primitivesCollection);
+		service.scene.primitives.add(primitivesCollection);
 	};
 
 	/**
