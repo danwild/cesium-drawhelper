@@ -1,6 +1,9 @@
 cesium-ng-drawhelper
 ================
 
+
+<strong>This project now has non-public dependencies (injected into the ng-module), which would need to be removed before general use.</strong>
+
 <p>An AngularJS service wrapper for a stripped back version of the cesium-drawhelper plugin (https://github.com/leforthomas/cesium-drawhelper).</p>
 
 <h2>Use:</h2>

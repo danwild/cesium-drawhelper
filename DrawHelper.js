@@ -1152,7 +1152,9 @@ var DrawHelper = (function() {
 
 		// DRAW - MOUSE MOVE
 		mouseHandler.setInputAction(function(movement) {
+
 			var position = movement.endPosition;
+			var distanceString = "";
 
 			if(position != null) {
 				if(positions.length == 0) {
@@ -1173,8 +1175,16 @@ var DrawHelper = (function() {
 						}
 						// update marker
 						markers.getBillboard(positions.length - 1).position = cartesian;
+
+						// get length
+						if(!isPolygon){
+							var cartoArray = Cesium.Ellipsoid.WGS84.cartesianArrayToCartographicArray(positions);
+							var length = cartographicArrayToSurfaceDistance(cartoArray);
+							distanceString = "<p>Distance "+ (length / 1000).toFixed(3) +" (km)</p>";
+						}
+
 						// show tooltip
-						tooltip.showAt(position, "<p>Click to add new point (" + positions.length + ")</p>" + (positions.length > minPoints ? "<p>Double click to finish drawing</p>" : ""));
+						tooltip.showAt(position, distanceString + "<p>Click to add new point (" + positions.length + ")</p>" + (positions.length > minPoints ? "<p>Double click to finish drawing</p>" : ""));
 					}
 				}
 			}
@@ -2121,6 +2131,20 @@ var DrawHelper = (function() {
 			}
 		}
 
+	}
+
+	// TODO duplicate viewerServiceUtil.cartographicArrayToSurfaceDistance
+	function cartographicArrayToSurfaceDistance(positions) {
+
+		var geodesic;
+		var distance = 0;
+
+		for(var i = 0; i < positions.length -1; i++){
+			geodesic = new Cesium.EllipsoidGeodesic(positions[i], positions[i+1]);
+			distance += geodesic.surfaceDistance;
+		}
+
+		return +(distance.toFixed(3));
 	}
 
 	return _;
