@@ -27,7 +27,6 @@ angular.module('cesium.drawhelper', [])
 	service.initialised = false;
 	service.drawHelper;
 	service.scene;
-	service.loggingMessage;
 
 	// reuse our shape material
 	var material = Cesium.Material.fromType(Cesium.Material.ColorType);
@@ -54,15 +53,6 @@ angular.module('cesium.drawhelper', [])
 
 		// start the draw helper to enable shape creation and editing
 		service.drawHelper = new DrawHelper(cesiumWidget);
-
-		// init logging
-		var logging = document.getElementById('drawlogging');
-		service.loggingMessage = function (message) {
-			if(logging) {
-				logging.innerHTML = message;
-			}
-		}
-
 		service.initialised = true;
 
 		return service.drawHelper;
@@ -101,8 +91,6 @@ angular.module('cesium.drawhelper', [])
 		service.drawHelper.startDrawingMarker({
 
 			callback: function(position) {
-
-				service.loggingMessage('Marker created at ' + position.toString());
 
 				var billboard = billboardCollection.add({
 					show : true,
@@ -144,7 +132,6 @@ angular.module('cesium.drawhelper', [])
 
 				callback: function(positions) {
 
-					service.loggingMessage('Corridor created with ' + positions.length + ' points');
 					var corridor = new DrawHelper.CorridorPrimitive({
 						positions: positions,
 						width: options.width || 10000,
@@ -158,7 +145,6 @@ angular.module('cesium.drawhelper', [])
 
 						corridor.setEditable();
 						corridor.addListener('onEdited', function(event) {
-							service.loggingMessage('Corridor edited, ' + event.positions.length + ' points');
 							options.hasOwnProperty('callback') ? options.callback(corridor) : console.log(corridor);
 						});
 					}
@@ -186,7 +172,6 @@ angular.module('cesium.drawhelper', [])
 
 				callback: function(positions) {
 
-					service.loggingMessage('Polyline created with ' + positions.length + ' points');
 					var polyline = new DrawHelper.PolylinePrimitive({
 						positions: positions,
 						width: options.width || 10,
@@ -201,7 +186,6 @@ angular.module('cesium.drawhelper', [])
 
 						polyline.setEditable();
 						polyline.addListener('onEdited', function(event) {
-							service.loggingMessage('Polyline edited, ' + event.positions.length + ' points');
 							options.hasOwnProperty('callback') ? options.callback(polyline) : console.log(polyline);
 						});
 					}
@@ -264,8 +248,6 @@ angular.module('cesium.drawhelper', [])
 
 			callback: function(positions) {
 
-				service.loggingMessage('Polygon created with ' + positions.length + ' points');
-
 				var polygon = new DrawHelper.PolygonPrimitive({
 					positions: positions,
 					material : material
@@ -277,8 +259,6 @@ angular.module('cesium.drawhelper', [])
 
 					polygon.setEditable();
 					polygon.addListener('onEdited', function (event) {
-						console.log(event);
-						service.loggingMessage('Polygon edited, ' + event.positions.length + ' points');
 						options.hasOwnProperty('callback') ? options.callback(polygon) : console.log(polygon);
 					});
 				}
@@ -304,8 +284,6 @@ angular.module('cesium.drawhelper', [])
 
 			callback: function(extent) {
 
-				service.loggingMessage('Extent created (N: ' + extent.north.toFixed(3) + ', E: ' + extent.east.toFixed(3) + ', S: ' + extent.south.toFixed(3) + ', W: ' + extent.west.toFixed(3) + ')');
-
 				var extentPrimitive = new DrawHelper.ExtentPrimitive({
 					extent: extent,
 					material: material
@@ -314,10 +292,8 @@ angular.module('cesium.drawhelper', [])
 				primitivesCollection.add(extentPrimitive);
 
 				if(options.hasOwnProperty("editable") && options.editable) {
-
 					extentPrimitive.setEditable();
 					extentPrimitive.addListener('onEdited', function (event) {
-						service.loggingMessage('Extent edited: extent is (N: ' + event.extent.north.toFixed(3) + ', E: ' + event.extent.east.toFixed(3) + ', S: ' + event.extent.south.toFixed(3) + ', W: ' + event.extent.west.toFixed(3) + ')');
 						options.hasOwnProperty('callback') ? options.callback(extentPrimitive) : console.log(extentPrimitive);
 					});
 				};
@@ -344,7 +320,6 @@ angular.module('cesium.drawhelper', [])
 
 			callback: function(center, radius) {
 
-				service.loggingMessage('Circle created: center is ' + center.toString() + ' and radius is ' + radius.toFixed(1) + ' meters');
 				var circle = new DrawHelper.CirclePrimitive({
 					center: center,
 					radius: radius,
@@ -357,7 +332,6 @@ angular.module('cesium.drawhelper', [])
 
 					circle.setEditable();
 					circle.addListener('onEdited', function (event) {
-						service.loggingMessage('Circle edited: radius is ' + event.radius.toFixed(1) + ' meters');
 						options.hasOwnProperty('callback') ? options.callback(circle) : console.log(circle);
 					});
 				};
