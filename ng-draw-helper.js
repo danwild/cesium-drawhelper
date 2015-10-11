@@ -19,7 +19,6 @@ angular.module('cesium.drawhelper', [])
  */
 
 
-// TODO logging -> flashService?
 .factory('drawHelperService', ['$q', 'viewerService', function($q, viewerService) {
 
 	var service = {};
@@ -216,7 +215,6 @@ angular.module('cesium.drawhelper', [])
 			{
 				callback: function(positions) {
 
-					service.loggingMessage('Fence created with ' + positions.length + ' points');
 					var fence = new DrawHelper.CorridorPrimitive({
 						isPrimitive: true,
 						positions: positions,
