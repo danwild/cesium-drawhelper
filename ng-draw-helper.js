@@ -339,6 +339,10 @@ angular.module('cesium.drawhelper', [])
 		});
 	};
 
+	service.stopDrawing = function(){
+		service.drawHelper.stopDrawing();
+	};
+
 	service.removeAllPrimitives = function(){
 
 		primitivesCollection.removeAll();
