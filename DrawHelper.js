@@ -1233,7 +1233,11 @@ var DrawHelper = (function() {
 				if(extent != null) {
 					primitives.remove(extent);
 				}
-				markers.remove();
+
+				if(markers){
+					markers.remove();
+				}
+
 				mouseHandler.destroy();
 				tooltip.setVisible(false);
 			}
