@@ -148,6 +148,7 @@ angular.module('cesium.drawhelper', [])
 						corridor.setEditable();
 						corridor.addListener('onEdited', function(event) {
 							options.hasOwnProperty('callback') ? options.callback(corridor) : console.log(corridor);
+							service.broadcastDrawState(false);
 						});
 					}
 					options.hasOwnProperty('callback') ? options.callback(corridor) : console.log(corridor);
@@ -190,6 +191,7 @@ angular.module('cesium.drawhelper', [])
 						polyline.setEditable();
 						polyline.addListener('onEdited', function(event) {
 							options.hasOwnProperty('callback') ? options.callback(polyline) : console.log(polyline);
+							service.broadcastDrawState(false);
 						});
 					}
 					options.hasOwnProperty('callback') ? options.callback(polyline) : console.log(polyline);
@@ -266,6 +268,7 @@ angular.module('cesium.drawhelper', [])
 					polygon.setEditable();
 					polygon.addListener('onEdited', function (event) {
 						options.hasOwnProperty('callback') ? options.callback(polygon) : console.log(polygon);
+						service.broadcastDrawState(false);
 					});
 				}
 
@@ -303,6 +306,7 @@ angular.module('cesium.drawhelper', [])
 					extentPrimitive.setEditable();
 					extentPrimitive.addListener('onEdited', function (event) {
 						options.hasOwnProperty('callback') ? options.callback(extentPrimitive) : console.log(extentPrimitive);
+						service.broadcastDrawState(false);
 					});
 				};
 
@@ -342,6 +346,7 @@ angular.module('cesium.drawhelper', [])
 					circle.setEditable();
 					circle.addListener('onEdited', function (event) {
 						options.hasOwnProperty('callback') ? options.callback(circle) : console.log(circle);
+						service.broadcastDrawState(false);
 					});
 				};
 
