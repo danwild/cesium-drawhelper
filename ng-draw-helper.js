@@ -19,7 +19,7 @@ angular.module('cesium.drawhelper', [])
  */
 
 
-.factory('drawHelperService', ['$q', 'viewerService', function($q, viewerService) {
+.factory('drawHelperService', ['$q', '$rootScope', 'viewerService', function($q, $rootScope, viewerService) {
 
 	var service = {};
 
@@ -87,6 +87,7 @@ angular.module('cesium.drawhelper', [])
 	 */
 	service.drawMarker = function(options){
 
+		service.broadcastDrawState(true);
 		service.drawHelper.startDrawingMarker({
 
 			callback: function(position) {
@@ -105,6 +106,7 @@ angular.module('cesium.drawhelper', [])
 				billboard.setEditable();
 
 				options.hasOwnProperty('callback') ? options.callback(billboard) : console.log(billboard);
+				service.broadcastDrawState(false);
 			}
 		});
 	};
@@ -123,6 +125,7 @@ angular.module('cesium.drawhelper', [])
 	 */
 	service.drawCorridor = function(options){
 
+		service.broadcastDrawState(true);
 		service.drawHelper.startDrawingCorridor(
 			options.isPrimitive,
 			0,
@@ -148,6 +151,7 @@ angular.module('cesium.drawhelper', [])
 						});
 					}
 					options.hasOwnProperty('callback') ? options.callback(corridor) : console.log(corridor);
+					service.broadcastDrawState(false);
 				}
 			});
 	};
@@ -166,9 +170,9 @@ angular.module('cesium.drawhelper', [])
 	 */
 	service.drawPolyline = function(options){
 
+		service.broadcastDrawState(true);
 		service.drawHelper.startDrawingPolyline(
 			{
-
 				callback: function(positions) {
 
 					var polyline = new DrawHelper.PolylinePrimitive({
@@ -189,6 +193,7 @@ angular.module('cesium.drawhelper', [])
 						});
 					}
 					options.hasOwnProperty('callback') ? options.callback(polyline) : console.log(polyline);
+					service.broadcastDrawState(false);
 				}
 			});
 	};
@@ -208,6 +213,7 @@ angular.module('cesium.drawhelper', [])
 	 */
 	service.drawFence = function(options){
 
+		service.broadcastDrawState(true);
 		service.drawHelper.startDrawingCorridor(
 			options.isPrimitive, // we can extrude Primitives, but not GroundPrimitives
 			options.extrudedHeight, // also sets height of billboard markers
@@ -226,6 +232,7 @@ angular.module('cesium.drawhelper', [])
 
 					primitivesCollection.add(fence);
 					options.hasOwnProperty('callback') ? options.callback(fence) : console.log(fence);
+					service.broadcastDrawState(false);
 				}
 			});
 	};
@@ -242,6 +249,7 @@ angular.module('cesium.drawhelper', [])
 	 */
 	service.drawPolygon = function(options){
 
+		service.broadcastDrawState(true);
 		service.drawHelper.startDrawingPolygon({
 
 			callback: function(positions) {
@@ -262,6 +270,7 @@ angular.module('cesium.drawhelper', [])
 				}
 
 				options.hasOwnProperty('callback') ? options.callback(polygon) : console.log(polygon);
+				service.broadcastDrawState(false);
 			}
 		});
 	};
@@ -278,6 +287,7 @@ angular.module('cesium.drawhelper', [])
 	 */
 	service.drawExtent = function(options){
 
+		service.broadcastDrawState(true);
 		service.drawHelper.startDrawingExtent({
 
 			callback: function(extent) {
@@ -297,7 +307,7 @@ angular.module('cesium.drawhelper', [])
 				};
 
 				options.hasOwnProperty('callback') ? options.callback(extentPrimitive) : console.log(extentPrimitive);
-
+				service.broadcastDrawState(false);
 			}
 		});
 	};
@@ -314,6 +324,7 @@ angular.module('cesium.drawhelper', [])
 	 */
 	service.drawCircle = function(options){
 
+		service.broadcastDrawState(true);
 		service.drawHelper.startDrawingCircle({
 
 			callback: function(center, radius) {
@@ -335,12 +346,14 @@ angular.module('cesium.drawhelper', [])
 				};
 
 				options.hasOwnProperty('callback') ? options.callback(circle) : console.log(circle);
+				service.broadcastDrawState(false);
 			}
 		});
 	};
 
 	service.stopDrawing = function(){
 		service.drawHelper.stopDrawing();
+		service.broadcastDrawState(false);
 	};
 
 	service.removeAllPrimitives = function(){
@@ -361,6 +374,10 @@ angular.module('cesium.drawhelper', [])
 	 */
 	service.getDisplayLatLngString = function(cartographic, precision) {
 		return Cesium.Math.toDegrees(cartographic.longitude).toFixed(2) + ", " + Cesium.Math.toDegrees(cartographic.latitude).toFixed(2);
+	};
+
+	service.broadcastDrawState = function(active){
+		$rootScope.$broadcast('drawhelper.active', active);
 	};
 
 
