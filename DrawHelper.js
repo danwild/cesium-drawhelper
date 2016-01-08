@@ -1249,19 +1249,45 @@ var DrawHelper = (function() {
 		var tooltip = this._tooltip;
 
 		var firstPoint = null;
+
+		var extentPrimitive;
 		var extent = null;
+		var instance = null;
+
 		var markers = null;
 
 		var mouseHandler = new Cesium.ScreenSpaceEventHandler(scene.canvas);
 
 		function updateExtent(value) {
 			if(extent == null) {
-				extent = new Cesium.RectanglePrimitive();
-				extent.asynchronous = false;
 
-				primitives.add(extent);
+				extent = new Cesium.RectangleGeometry({rectangle: value });
+				instance = new Cesium.GeometryInstance({
+					geometry: extent
+				});
+
+				extentPrimitive = new Cesium.Primitive({
+					geometryInstances : instance,
+					appearance : new Cesium.EllipsoidSurfaceAppearance(),
+					asynchronous: false
+				});
+				primitives.add(extentPrimitive);
 			}
-			extent.rectangle = value;
+
+			extent = new Cesium.RectangleGeometry({rectangle: value });
+			instance = new Cesium.GeometryInstance({
+				geometry: extent
+			});
+
+			primitives.remove(extentPrimitive);
+			extentPrimitive = new Cesium.Primitive({
+				geometryInstances : instance,
+				appearance : new Cesium.EllipsoidSurfaceAppearance(),
+				asynchronous: false,
+				id: extent
+			});
+			primitives.add(extentPrimitive);
+
 			// update the markers
 			var corners = getExtentCorners(value);
 			// create if they do not yet exist
@@ -1303,7 +1329,7 @@ var DrawHelper = (function() {
 					if (cartesian) {
 						var value = getExtent(firstPoint, ellipsoid.cartesianToCartographic(cartesian));
 						updateExtent(value);
-						tooltip.showAt(position, "<p>Drag to change rectangle extent</p><p>Click again to finish drawing</p>");
+						tooltip.showAt(position, "<p>Move cursor to change rectangle extent</p><p>Click again to finish drawing</p>");
 					}
 				}
 			}
@@ -1543,7 +1569,7 @@ var DrawHelper = (function() {
 						return ellipsoid.cartographicToCartesian(
 							new Cesium.EllipsoidGeodesic(ellipsoid.cartesianToCartographic(positions[index]),
 								ellipsoid.cartesianToCartographic(positions[index < positions.length - 1 ? index + 1 : 0])).
-								interpolateUsingFraction(0.5)
+							interpolateUsingFraction(0.5)
 						);
 					}
 					var halfPositions = [];
