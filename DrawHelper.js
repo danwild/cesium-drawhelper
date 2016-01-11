@@ -232,15 +232,24 @@ var DrawHelper = (function() {
 	});
 
 	var defaultPolygonOptions = copyOptions(defaultShapeOptions, {});
-	var defaultExtentOptions = copyOptions(defaultShapeOptions, {});
 	var defaultCircleOptions = copyOptions(defaultShapeOptions, {});
 	var defaultEllipseOptions = copyOptions(defaultSurfaceOptions, {rotation: 0});
+
+	var defaultExtentOptions = copyOptions(defaultShapeOptions, {
+		geodesic: true,
+		appearance: new Cesium.EllipsoidSurfaceAppearance({
+			aboveGround : false
+		}),
+		isPrimitive: false
+	});
+
+
 	var defaultCorridorOptions = copyOptions(defaultShapeOptions, {
 		geodesic: true,
 		appearance: new Cesium.EllipsoidSurfaceAppearance({
 			aboveGround : false
 		}),
-		isPrimitive: false,
+		isPrimitive: true,
 		height: 0,
 		extrudedHeight: 0,
 		width: 10000
@@ -448,7 +457,7 @@ var DrawHelper = (function() {
 				throw new Cesium.DeveloperError('Extent is required');
 			}
 
-			options = copyOptions(options, defaultSurfaceOptions);
+			options = copyOptions(options, defaultExtentOptions);
 
 			this.initialiseOptions(options);
 
@@ -470,6 +479,7 @@ var DrawHelper = (function() {
 		_.prototype.getGeometry = function() {
 
 			if (!Cesium.defined(this.extent)) {
+				console.log("GOT NO EXTENT");
 				return;
 			}
 
@@ -487,7 +497,7 @@ var DrawHelper = (function() {
 			return new Cesium.RectangleOutlineGeometry({
 				rectangle: this.extent
 			});
-		}
+		};
 
 		return _;
 	})();
@@ -732,7 +742,7 @@ var DrawHelper = (function() {
 				vertexFormat : Cesium.EllipsoidSurfaceAppearance.VERTEX_FORMAT,
 				ellipsoid : this.ellipsoid
 			});
-		}
+		};
 
 		return _;
 	})();
@@ -1225,13 +1235,14 @@ var DrawHelper = (function() {
 
 	_.prototype.startDrawingExtent = function(options) {
 
-		var options = copyOptions(options, defaultSurfaceOptions);
+		var options = copyOptions(options, defaultExtentOptions);
 
 		this.startDrawing(
 
 			function() {
 				if(extent != null) {
-					primitives.remove(extent);
+					primitives.remove(extentPrimitive);
+					//primitives.remove(extent);
 				}
 
 				if(markers){
@@ -1247,13 +1258,10 @@ var DrawHelper = (function() {
 		var scene = this._scene;
 		var primitives = this._scene.primitives;
 		var tooltip = this._tooltip;
-
 		var firstPoint = null;
-
 		var extentPrimitive;
 		var extent = null;
 		var instance = null;
-
 		var markers = null;
 
 		var mouseHandler = new Cesium.ScreenSpaceEventHandler(scene.canvas);
@@ -1265,12 +1273,12 @@ var DrawHelper = (function() {
 				instance = new Cesium.GeometryInstance({
 					geometry: extent
 				});
-
 				extentPrimitive = new Cesium.Primitive({
 					geometryInstances : instance,
 					appearance : new Cesium.EllipsoidSurfaceAppearance(),
 					asynchronous: false
 				});
+
 				primitives.add(extentPrimitive);
 			}
 
@@ -1278,13 +1286,12 @@ var DrawHelper = (function() {
 			instance = new Cesium.GeometryInstance({
 				geometry: extent
 			});
-
 			primitives.remove(extentPrimitive);
 			extentPrimitive = new Cesium.Primitive({
-				geometryInstances : instance,
+				geometryInstances : instance
+				,
 				appearance : new Cesium.EllipsoidSurfaceAppearance(),
-				asynchronous: false,
-				id: extent
+				asynchronous: false
 			});
 			primitives.add(extentPrimitive);
 
