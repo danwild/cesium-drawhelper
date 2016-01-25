@@ -179,6 +179,8 @@ var DrawHelper = (function() {
 	}
 
 	_.prototype.stopDrawing = function() {
+		// undo any current edit of shapes
+		this.disableAllEditMode();
 		//check for cleanUp first
 		if(this.editCleanUp) {
 			this.editCleanUp();
